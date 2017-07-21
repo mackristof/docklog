@@ -16,6 +16,8 @@
 # Binaries
 /debug
 test/speaker/tick
+/docklog
 
 # VSCode launch conf
 /.vscode/
+
