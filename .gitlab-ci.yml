@@ -11,7 +11,7 @@ image: golang:latest
 
 before_script:
     - ln -s /builds /go/src/mackristof
-    - cd /go/src/mackristof/repos/docklog
+    - cd /go/src/mackristof/docklog
 
 stages:
     - test
