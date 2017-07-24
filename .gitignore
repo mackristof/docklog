@@ -21,3 +21,4 @@ test/speaker/tick
 # VSCode launch conf
 /.vscode/
 
+/vendor
