@@ -10,8 +10,14 @@ image: golang:latest
 
 
 before_script:
-    - ln -s /builds /go/src
-    - cd /go/src/mackristof/docklog
+    - echo $GOPATH
+    - mkdir /go/src/mydomainperso.com
+    - ln -s /builds /go/src/mydomainperso.com
+    - cd /go/src/mydomainperso.com/
+    - dir
+    - echo $GOROOT
+    - cd /go/src/mydomainperso.com/builds/mackristof/docklog
+
 
 stages:
     - test
