@@ -10,7 +10,7 @@ image: golang:latest
 
 
 before_script:
-    - ln -s /builds /go/src/mackristof
+    - ln -s /builds /go/src
     - cd /go/src/mackristof/docklog
 
 stages:
