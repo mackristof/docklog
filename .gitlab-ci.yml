@@ -9,9 +9,9 @@ image: golang:latest
 # Thus, making a symbolic link corrects this.
 
 
-# before_script:
-#    - ln -s /builds /go/src/mydomainperso.com
-#    - cd /go/src/mydomainperso.com/repos/projectname
+before_script:
+    - ln -s /builds /go/src/mackristof
+    - cd /go/src/mackristof/repos/docklog
 
 stages:
     - test
