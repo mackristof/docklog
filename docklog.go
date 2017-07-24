@@ -63,19 +63,20 @@ func main() {
 	var param tools.DockerParam
 	if *localFlag {
 		fmt.Println("no host defined so use local docker engine")
-		param = tools.DockerParam{Url: tools.DockerLocal}
+		param = tools.DockerParam{URL: tools.DockerLocal}
 	}
 
 	if len(flag.Args()) == 1 && *remoteFlag {
 		param = tools.DockerParam{
-			Url:  fmt.Sprintf("tcp://%s:2376", flag.Args()[0]),
+			URL:  fmt.Sprintf("tcp://%s:2376", flag.Args()[0]),
 			Path: certPath.String(),
 		}
 	} else {
 		if len(flag.Args()) == 1 && *swarmFlag {
 			param = tools.DockerParam{
-				Url:  fmt.Sprintf("https://%s:2377", flag.Args()[0]),
-				Path: certPath.String(),
+				URL:       fmt.Sprintf("tcp://%s:2376", flag.Args()[0]),
+				Path:      certPath.String(),
+				SwarmMode: true,
 			}
 		} else {
 			fmt.Println("no argument defined to docker engine")
@@ -83,8 +84,12 @@ func main() {
 		}
 
 	}
-
-	docker := tools.NewDocker(param)
+	fmt.Printf("connect to %s with path %s\n ", param.URL, param.Path)
+	docker, err := tools.NewDocker(param)
+	if err != nil {
+		fmt.Printf("cant create docker client %s", err)
+		os.Exit(2)
+	}
 	docker.ListContainers(name.String(), label.Strings())
 	wait()
 }
