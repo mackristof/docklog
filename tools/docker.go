@@ -11,7 +11,7 @@ import (
 	"fmt"
 
 	"github.com/docker/docker/api/types/swarm"
-	"github.com/mackristof/go-dockerclient"
+	"github.com/fsouza/go-dockerclient"
 	"github.com/pkg/errors"
 )
 
@@ -159,7 +159,7 @@ func (clientImpl *dockerImpl) getLogService(serviceID string, stream io.Writer) 
 		Stderr:       true,
 		Timestamps:   false,
 	}
-	err := clientImpl.client.LogsService(opts)
+	err := clientImpl.client.GetServiceLogs(opts)
 	if err != nil {
 		panic(err)
 	}

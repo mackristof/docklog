@@ -10,8 +10,8 @@
 [[projects]]
   name = "github.com/Microsoft/go-winio"
   packages = ["."]
-  revision = "c4dc1301f1dc0307acd38e611aa375a64dfe0642"
-  version = "v0.4.3"
+  revision = "7ff89941bcb93df2e962467fb073c6e997b13cf0"
+  version = "v0.4.4"
 
 [[projects]]
   name = "github.com/Sirupsen/logrus"
@@ -39,15 +39,15 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/fsouza/go-dockerclient"
+  packages = ["."]
+  revision = "8462902e31da1644862169cd142c126223ecb38e"
+
+[[projects]]
+  branch = "master"
   name = "github.com/hashicorp/go-cleanhttp"
   packages = ["."]
   revision = "3573b8b52aa7b37b9358d966a898feb387f62437"
-
-[[projects]]
-  branch = "add-service-logs"
-  name = "github.com/mackristof/go-dockerclient"
-  packages = ["."]
-  revision = "3c46e9fee109d73de86fd797cc007c37bff949ad"
 
 [[projects]]
   name = "github.com/opencontainers/runc"
@@ -71,17 +71,17 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp"]
-  revision = "ab5485076ff3407ad2d02db054635913f017b0ed"
+  revision = "f5079bd7f6f74e23c4d65efa0f4ce14cbd6a3c0f"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix","windows"]
-  revision = "c4489faa6e5ab84c0ef40d6ee878f7a030281f0f"
+  revision = "02a66801d979d706a4b445e24e03916eeaa2a404"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6f9671f4b1200795e97bf79ede1c923fe4cd971c204d1ce18799543886bded47"
+  inputs-digest = "fc42c7098dfb16f11eb2bf04adcb6abb8e0e2b18045d9a4f848cab48db63c76b"
   solver-name = "gps-cdcl"
   solver-version = 1
