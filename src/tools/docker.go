@@ -86,17 +86,20 @@ func (clientImpl *dockerImpl) ListContainers(namePattern string, labelPattern []
 		for i, container := range containers {
 			for _, name := range container.Names {
 				if strings.Contains(name, namePattern) {
+					fmt.Printf("container %s found", name)
 					filteredContainers = append(filteredContainers, containers[i])
 				}
 			}
 		}
-		log.Printf("list : %v", containers)
-		if len(containers) == 0 {
+		// formatedList, err := json.MarshalIndent(containers, "", "	")
+
+		// log.Printf("list : %v", string(formatedList))
+		if len(filteredContainers) == 0 {
 			fmt.Println("no containers match")
 			os.Exit(0)
 		}
 		var stream io.Writer = bufio.NewWriterSize(os.Stdout, 1)
-		for _, container := range containers {
+		for _, container := range filteredContainers {
 			var b bytes.Buffer
 			writer := bufio.NewWriter(&b)
 			w := io.MultiWriter(writer, stream)

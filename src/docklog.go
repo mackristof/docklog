@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mackristof/docklog/tools"
+	"docklog/src/tools"
 )
 
 type stringFlag struct {
@@ -43,14 +43,21 @@ func main() {
 	localFlag := flag.Bool("local", false, "access to local docker engine")
 	remoteFlag := flag.Bool("remote", false, "access to remote docker engine")
 	swarmFlag := flag.Bool("swarm", false, "access to docker swarm cluster")
+	flag.Usage = func() {
+		fmt.Printf("Usage: docklog [options] url\n\n")
+		flag.PrintDefaults()
+	}
 	flag.Parse()
-	fmt.Printf("url : %v\n", flag.Args())
+	if len(flag.Args()) > 0 {
+		fmt.Printf("url : %v\n", flag.Args())
+	}
+
 	if label.set {
 		fmt.Printf("label count: %d\n", len(label.Strings()))
-		fmt.Printf("label: %v\n", label.values)
+		fmt.Printf("label pattern: %v\n", label.values)
 	}
 	if name.set {
-		fmt.Printf("name: %v\n", name.values)
+		fmt.Printf("name pattern: %v\n", name.values)
 	}
 	sigs := make(chan os.Signal, 1)
 
@@ -61,10 +68,6 @@ func main() {
 		os.Exit(2)
 	}()
 	var param tools.DockerParam
-	if *localFlag {
-		fmt.Println("no host defined so use local docker engine")
-		param = tools.DockerParam{URL: tools.DockerLocal}
-	}
 
 	if len(flag.Args()) == 1 && *remoteFlag {
 		param = tools.DockerParam{
@@ -79,10 +82,14 @@ func main() {
 				SwarmMode: true,
 			}
 		} else {
-			fmt.Println("no argument defined to docker engine")
-			os.Exit(2)
+			if *localFlag {
+				fmt.Println("no host defined so use local docker engine")
+				param = tools.DockerParam{URL: tools.DockerLocal}
+			} else {
+				flag.Usage()
+				os.Exit(2)
+			}
 		}
-
 	}
 	fmt.Printf("connect to %s with path %s\n ", param.URL, param.Path)
 	docker, err := tools.NewDocker(param)

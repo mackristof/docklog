@@ -22,3 +22,4 @@ test/speaker/tick
 /.vscode/
 
 /vendor
+/build
