@@ -59,11 +59,11 @@ func main() {
 	if name.set {
 		fmt.Printf("name pattern: %v\n", name.values)
 	}
-	sigs := make(chan os.Signal, 1)
+	signals := make(chan os.Signal, 1)
 
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
-		sig := <-sigs
+		sig := <-signals
 		fmt.Println(sig)
 		os.Exit(2)
 	}()
