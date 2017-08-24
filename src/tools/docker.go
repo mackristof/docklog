@@ -77,7 +77,7 @@ func (clientImpl *dockerImpl) ListContainers(namePattern string, labelPattern []
 	}
 	if !clientImpl.swarm {
 		opts := docker.ListContainersOptions{All: true, Filters: filterMap}
-		fmt.Printf("search opts: %v\n", opts)
+		fmt.Printf("search opts: %+v\n", opts)
 		containers, err := clientImpl.client.ListContainers(opts)
 		if err != nil {
 			panic("can't list containers with filter")
