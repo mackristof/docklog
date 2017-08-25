@@ -19,7 +19,8 @@ var DockerLocal = "unix:///var/run/docker.sock"
 
 // Docker client interface
 type Docker interface {
-	ListContainers(namePattern string, labelPattern []string)
+	ListContainers(namePattern string, labelPattern []string) []Container
+	GetLogs(containers []Container)
 }
 
 type DockerParam struct {
@@ -31,6 +32,11 @@ type DockerParam struct {
 type dockerImpl struct {
 	client *docker.Client
 	swarm  bool
+}
+
+type Container struct {
+	ID      string
+	Service bool
 }
 
 // NewDocker docker client constructor
@@ -69,7 +75,8 @@ func NewDocker(param DockerParam) (Docker, error) {
 	return &dockerImpl{client: client, swarm: isSwarm}, nil
 }
 
-func (clientImpl *dockerImpl) ListContainers(namePattern string, labelPattern []string) {
+func (clientImpl *dockerImpl) ListContainers(namePattern string, labelPattern []string) []Container {
+	result := make([]Container, 0)
 	filterMap := map[string][]string{"status": {"running"}}
 	if len(labelPattern) > 0 {
 		// "label": {labelPattern}
@@ -86,25 +93,20 @@ func (clientImpl *dockerImpl) ListContainers(namePattern string, labelPattern []
 		for i, container := range containers {
 			for _, name := range container.Names {
 				if strings.Contains(name, namePattern) {
-					fmt.Printf("container %s found", name)
+					fmt.Printf("container %s found\n", name)
 					filteredContainers = append(filteredContainers, containers[i])
 				}
 			}
 		}
-		// formatedList, err := json.MarshalIndent(containers, "", "	")
-
-		// log.Printf("list : %v", string(formatedList))
+		log.Printf("list : %+v", filteredContainers)
 		if len(filteredContainers) == 0 {
 			fmt.Println("no containers match")
 			os.Exit(0)
 		}
-		var stream io.Writer = bufio.NewWriterSize(os.Stdout, 1)
-		for _, container := range filteredContainers {
-			var b bytes.Buffer
-			writer := bufio.NewWriter(&b)
-			w := io.MultiWriter(writer, stream)
-			go clientImpl.getLogContainer(container.ID, w)
+		for _, container := range containers {
+			result = append(result, Container{ID: container.ID, Service: false})
 		}
+
 	} else { //swarm mode
 		services, err := clientImpl.client.ListServices(docker.ListServicesOptions{})
 		if err != nil {
@@ -118,52 +120,57 @@ func (clientImpl *dockerImpl) ListContainers(namePattern string, labelPattern []
 			}
 
 		}
-		log.Printf("list : %v", services)
-		if len(services) == 0 {
+		log.Printf("list : %+v", filteredServices)
+		if len(filteredServices) == 0 {
 			fmt.Println("no service match")
 			os.Exit(0)
 		}
-		var stream io.Writer = bufio.NewWriterSize(os.Stdout, 1)
 		for _, service := range services {
-			var b bytes.Buffer
-			writer := bufio.NewWriter(&b)
-			w := io.MultiWriter(writer, stream)
-			go clientImpl.getLogService(service.ID, w)
+			result = append(result, Container{ID: service.ID, Service: true})
 		}
 	}
+	return result
 
 }
 
-func (clientImpl *dockerImpl) getLogContainer(containerID string, stream io.Writer) {
-
-	opts := docker.LogsOptions{
-		Container:    containerID,
-		OutputStream: stream,
-		RawTerminal:  true,
-		Follow:       true,
-		Stdout:       true,
-		Stderr:       true,
-		Timestamps:   false,
-	}
-	err := clientImpl.client.Logs(opts)
-	if err != nil {
-		panic(err)
+func (clientImpl *dockerImpl) GetLogs(containers []Container) {
+	var stream io.Writer = bufio.NewWriterSize(os.Stdout, 1)
+	for _, container := range containers {
+		var b bytes.Buffer
+		writer := bufio.NewWriter(&b)
+		w := io.MultiWriter(writer, stream)
+		go clientImpl.getLog(container, w)
 	}
 }
 
-func (clientImpl *dockerImpl) getLogService(serviceID string, stream io.Writer) {
-
-	opts := docker.LogsServiceOptions{
-		Service:      serviceID,
-		OutputStream: stream,
-		RawTerminal:  true,
-		Follow:       true,
-		Stdout:       true,
-		Stderr:       true,
-		Timestamps:   false,
-	}
-	err := clientImpl.client.GetServiceLogs(opts)
-	if err != nil {
-		panic(err)
+func (clientImpl *dockerImpl) getLog(container Container, stream io.Writer) {
+	if container.Service {
+		opts := docker.LogsServiceOptions{
+			Service:      container.ID,
+			OutputStream: stream,
+			RawTerminal:  true,
+			Follow:       true,
+			Stdout:       true,
+			Stderr:       true,
+			Timestamps:   false,
+		}
+		err := clientImpl.client.GetServiceLogs(opts)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		opts := docker.LogsOptions{
+			Container:    container.ID,
+			OutputStream: stream,
+			RawTerminal:  true,
+			Follow:       true,
+			Stdout:       true,
+			Stderr:       true,
+			Timestamps:   false,
+		}
+		err := clientImpl.client.Logs(opts)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
