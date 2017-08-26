@@ -1,9 +1,11 @@
+
+
 all:  dep build 
 	@echo "All done. \o/"
 
 build: test
 	@rm -rf build
-	@go build -o "build/docklog" src/docklog.go
+	@go build -o "build/docklog" docklog.go
 	
 dep:
 	@echo "getting dependency tool"
@@ -13,10 +15,12 @@ dep:
 
 lint: 
 	@echo "verify src with go vet"
-	@go tool vet -composites=false -shadow=true src/**/*.go
+	@go tool vet -composites=false -shadow=true *.go
+	@go tool vet -composites=false -shadow=true tools/*.go
+
 
 test: lint
 	@echo "let's doing some tests"
-	@go test -race ./src/...
+	@go test -race ./...
 
 .PHONY: test dep build lint
