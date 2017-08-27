@@ -11,8 +11,10 @@ services:
 before_install:
 - cd test/speaker 
 - ./start-local.sh
+- cd ../..
 
-install: make dep
+install: 
+  - make dep
 
 script:
   - make build
