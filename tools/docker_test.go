@@ -30,9 +30,9 @@ func Test_dockerImpl_ListContainers(t *testing.T) {
 		args   args
 	}{
 		{
-			name:   "should found containers where name contains 'data'",
+			name:   "should found containers where name contains 'toto'",
 			fields: fields{client: client, swarm: false},
-			args:   args{namePattern: "mysql"},
+			args:   args{namePattern: "toto"},
 		},
 	}
 
