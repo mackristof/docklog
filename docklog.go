@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"docklog/src/tools"
+	"github.com/mackristof/docklog/tools"
 )
 
 type stringFlag struct {

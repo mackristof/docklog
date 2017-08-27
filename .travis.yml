@@ -1,0 +1,20 @@
+language: go
+
+go:
+  - 1.9
+
+sudo: required
+
+services:
+  - docker
+
+before_install:
+- cd test/speaker 
+- ./start-local.sh
+- cd ../..
+
+install: 
+  - make dep
+
+script:
+  - make build
