@@ -15,14 +15,16 @@ import (
 	"github.com/pkg/errors"
 )
 
+// DockerLocal is the default URL to connect local docker engine
 var DockerLocal = "unix:///var/run/docker.sock"
 
 // Docker client interface
 type Docker interface {
-	ListContainers(namePattern string, labelPattern []string) []Container
+	FindContainers(namePattern string, labelPattern []string) []Container
 	GetLogs(containers []Container)
 }
 
+// DockerParam used by docker client to connect with engine
 type DockerParam struct {
 	URL       string
 	Path      string
@@ -34,6 +36,7 @@ type dockerImpl struct {
 	swarm  bool
 }
 
+// Container represent container by ID and Service = true if deployed on swarm else Service = false
 type Container struct {
 	ID      string
 	Service bool
@@ -75,62 +78,73 @@ func NewDocker(param DockerParam) (Docker, error) {
 	return &dockerImpl{client: client, swarm: isSwarm}, nil
 }
 
-func (clientImpl *dockerImpl) ListContainers(namePattern string, labelPattern []string) []Container {
-	result := make([]Container, 0)
+func (clientImpl *dockerImpl) FindContainers(namePattern string, labelPattern []string) []Container {
+	var result []Container
 	filterMap := map[string][]string{"status": {"running"}}
 	if len(labelPattern) > 0 {
 		// "label": {labelPattern}
 		filterMap["label"] = labelPattern
 	}
 	if !clientImpl.swarm {
-		opts := docker.ListContainersOptions{All: true, Filters: filterMap}
-		fmt.Printf("search opts: %+v\n", opts)
-		containers, err := clientImpl.client.ListContainers(opts)
-		if err != nil {
-			panic("can't list containers with filter")
-		}
-		filteredContainers := make([]docker.APIContainers, 0)
-		for i, container := range containers {
-			for _, name := range container.Names {
-				if strings.Contains(name, namePattern) {
-					fmt.Printf("container %s found\n", name)
-					filteredContainers = append(filteredContainers, containers[i])
-				}
-			}
-		}
-		log.Printf("list : %+v", filteredContainers)
-		if len(filteredContainers) == 0 {
-			fmt.Println("no containers match")
-			os.Exit(0)
-		}
-		for _, container := range containers {
-			result = append(result, Container{ID: container.ID, Service: false})
-		}
-
+		result = listContainers(clientImpl, filterMap, namePattern)
 	} else { //swarm mode
-		services, err := clientImpl.client.ListServices(docker.ListServicesOptions{})
-		if err != nil {
-			panic(err)
-		}
-		filteredServices := make([]swarm.Service, 0)
-		for i, service := range services {
-
-			if strings.Contains(service.Spec.Name, namePattern) {
-				filteredServices = append(filteredServices, services[i])
-			}
-
-		}
-		log.Printf("list : %+v", filteredServices)
-		if len(filteredServices) == 0 {
-			fmt.Println("no service match")
-			os.Exit(0)
-		}
-		for _, service := range services {
-			result = append(result, Container{ID: service.ID, Service: true})
-		}
+		result = listServices(clientImpl, namePattern)
 	}
 	return result
 
+}
+
+func listServices(clientImpl *dockerImpl, namePattern string) []Container {
+	result := make([]Container, 0)
+	services, err := clientImpl.client.ListServices(docker.ListServicesOptions{})
+	if err != nil {
+		panic(err)
+	}
+	filteredServices := make([]swarm.Service, 0)
+	for i, service := range services {
+
+		if strings.Contains(service.Spec.Name, namePattern) {
+			filteredServices = append(filteredServices, services[i])
+		}
+
+	}
+	log.Printf("list : %+v", filteredServices)
+	if len(filteredServices) == 0 {
+		fmt.Println("no service match")
+		os.Exit(0)
+	}
+	for _, service := range services {
+		result = append(result, Container{ID: service.ID, Service: true})
+	}
+	return result
+}
+
+func listContainers(clientImpl *dockerImpl, filterMap map[string][]string, namePattern string) []Container {
+	result := make([]Container, 0)
+	opts := docker.ListContainersOptions{All: true, Filters: filterMap}
+	fmt.Printf("search opts: %+v\n", opts)
+	containers, err := clientImpl.client.ListContainers(opts)
+	if err != nil {
+		panic("can't list containers with filter")
+	}
+	filteredContainers := make([]docker.APIContainers, 0)
+	for i, container := range containers {
+		for _, name := range container.Names {
+			if strings.Contains(name, namePattern) {
+				fmt.Printf("container %s found\n", name)
+				filteredContainers = append(filteredContainers, containers[i])
+			}
+		}
+	}
+	log.Printf("list : %+v", filteredContainers)
+	if len(filteredContainers) == 0 {
+		fmt.Println("no containers match")
+		os.Exit(0)
+	}
+	for _, container := range containers {
+		result = append(result, Container{ID: container.ID, Service: false})
+	}
+	return result
 }
 
 func (clientImpl *dockerImpl) GetLogs(containers []Container) {

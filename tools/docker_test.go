@@ -40,7 +40,7 @@ func Test_dockerImpl_ListContainers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			containers := dockerImpl.ListContainers(tt.args.namePattern, tt.args.labelPattern)
+			containers := dockerImpl.FindContainers(tt.args.namePattern, tt.args.labelPattern)
 			assert.True(t, len(containers) > 0)
 
 		})

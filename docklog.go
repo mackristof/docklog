@@ -97,7 +97,7 @@ func main() {
 		fmt.Printf("cant create docker client %s", err)
 		os.Exit(2)
 	}
-	containers := docker.ListContainers(name.String(), label.Strings())
+	containers := docker.FindContainers(name.String(), label.Strings())
 	docker.GetLogs(containers)
 	wait()
 }
