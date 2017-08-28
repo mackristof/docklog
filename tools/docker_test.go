@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/fsouza/go-dockerclient"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_dockerImpl_ListContainers(t *testing.T) {
@@ -39,7 +40,9 @@ func Test_dockerImpl_ListContainers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			dockerImpl.ListContainers(tt.args.namePattern, tt.args.labelPattern)
+			containers := dockerImpl.ListContainers(tt.args.namePattern, tt.args.labelPattern)
+			assert.True(t, len(containers) > 0)
+
 		})
 	}
 }
